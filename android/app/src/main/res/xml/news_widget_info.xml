@@ -4,7 +4,7 @@
     android:initialKeyguardLayout="@layout/news_widget"
     android:initialLayout="@layout/news_widget"
     android:minWidth="180dp"
-    android:minHeight="180dp"
+    android:minHeight="120dp"
     android:previewImage="@drawable/example_appwidget_preview"
     android:previewLayout="@layout/news_widget"
     android:resizeMode="horizontal|vertical"
