@@ -38,7 +38,7 @@ android {
         applicationId = "com.example.home_widget_demo"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
-        minSdk = flutter.minSdkVersion
+        minSdk = 26
         targetSdk = flutter.targetSdkVersion
         versionCode = flutterVersionCode.toInteger()
         versionName = flutterVersionName
@@ -51,6 +51,13 @@ android {
             signingConfig = signingConfigs.debug
         }
     }
+}
+
+dependencies {
+    implementation("io.ktor:ktor-client-core:2.1.0")
+    implementation("io.ktor:ktor-client-cio:2.1.0")
+    implementation("io.ktor:ktor-client-serialization:2.1.0")
+    implementation("com.google.code.gson:gson:2.11.0")
 }
 
 flutter {
