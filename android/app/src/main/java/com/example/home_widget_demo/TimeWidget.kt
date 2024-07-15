@@ -46,7 +46,7 @@ class TimeWidgetProvider : AppWidgetProvider() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val response: String = fetchApiData()
-                val views = RemoteViews(context.packageName, R.layout.widget_layout)
+                val views = RemoteViews(context.packageName, R.layout.time_widget)
                 views.setTextViewText(R.id.textViewTime, response)
                 appWidgetManager.updateAppWidget(appWidgetId, views)
             } catch (e: Exception) {
