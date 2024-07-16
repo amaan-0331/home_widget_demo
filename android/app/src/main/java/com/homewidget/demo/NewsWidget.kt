@@ -1,5 +1,5 @@
 // Import will depend on App ID.
-package com.example.home_widget_demo
+package com.homewidget.demo
 
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider

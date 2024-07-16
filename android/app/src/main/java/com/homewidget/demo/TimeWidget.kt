@@ -1,4 +1,4 @@
-package com.example.home_widget_demo
+package com.homewidget.demo
 
 import android.app.AlarmManager
 import android.app.PendingIntent
