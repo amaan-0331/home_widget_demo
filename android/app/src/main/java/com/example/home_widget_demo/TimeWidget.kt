@@ -75,8 +75,9 @@ class TimeWidgetProvider : AppWidgetProvider() {
             return time
         } catch (e: Exception) {
             // Log exception or return a default error message
-            e.printStackTrace()
-            return "Error"
+            // e.printStackTrace()
+            println(e)
+            return e.localizedMessage?:"No Error Available"
         }
     }
 
