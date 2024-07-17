@@ -11,26 +11,38 @@ import android.os.SystemClock
 import android.widget.RemoteViews
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
-import io.ktor.client.*
-import io.ktor.client.engine.cio.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.request.headers
+import io.ktor.client.request.request
+import io.ktor.client.request.setBody
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+import io.ktor.client.statement.request
+import io.ktor.http.ContentType
+import io.ktor.http.HttpMethod
+import io.ktor.http.contentType
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Locale
 
 class TimeWidgetProvider : AppWidgetProvider() {
 
-    override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
+    override fun onUpdate(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetIds: IntArray,
+    ) {
         for (appWidgetId in appWidgetIds) {
             updateAppWidget(context, appWidgetManager, appWidgetId)
         }
         setAlarm(context)
     }
 
-    override fun onReceive(context: Context, intent: Intent) {
+    override fun onReceive(
+        context: Context,
+        intent: Intent,
+    ) {
         super.onReceive(context, intent)
         if (intent.action == UPDATE_ACTION) {
             val appWidgetManager = AppWidgetManager.getInstance(context)
@@ -42,7 +54,11 @@ class TimeWidgetProvider : AppWidgetProvider() {
         }
     }
 
-    private fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
+    private fun updateAppWidget(
+        context: Context,
+        appWidgetManager: AppWidgetManager,
+        appWidgetId: Int,
+    ) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val response: String = fetchApiData()
@@ -60,58 +76,94 @@ class TimeWidgetProvider : AppWidgetProvider() {
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val intent = Intent(context, TimeWidgetProvider::class.java)
         intent.action = UPDATE_ACTION
-        val pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime(), 60000, pendingIntent)
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        alarmManager.setRepeating(
+            AlarmManager.ELAPSED_REALTIME,
+            SystemClock.elapsedRealtime(),
+            60000,
+            pendingIntent,
+        )
     }
 
     private suspend fun fetchApiData(): String {
         try {
             val client = HttpClient(CIO)
-            val response: HttpResponse = client.get("http://worldtimeapi.org/api/timezone/Asia/Dubai")
+            val url = "https://argaamv2mobileapis.argaam.com/v2.2/json/article-listing/Market-News-Saudi"
+            val reqHeaders = mapOf(
+                "offSet" to "300",
+                "content-type" to "application/json",
+                "deviceType" to "android",
+                "devicetoken" to "cDOsE8FyRTynHOrCHchCHT:APA91bFHjRX1E731fv7OkqkRQHLjwbqfcWGAVKjcCuhO9ouWsqCq6yzFTb6GusWaHRq595C9hkQLfJSNTBA1gEWaXEOkFsZulXCXxIGhXgJ9924OmT8uO9Gj-n6Fslx6t55UJ7fPAtHK",
+            )
+            val reqBody = RequestBody(
+                param = Param(
+                    companyId = 0,
+                    langId = 2,
+                    marketId = 3,
+//                    pageNo = 1,
+                    pageSize = 5,
+                ),
+            )
+
+            val response: HttpResponse = client.request(url) {
+                method = HttpMethod.Post
+                headers {
+                    reqHeaders.forEach { (key, value) ->
+                        append(key, value)
+                    }
+                }
+                contentType(ContentType.Application.Json)
+                setBody(Gson().toJson(reqBody))
+            }
+
+            println(response.request.url)
             val body = response.bodyAsText()
+            println(body)
             val apiResponse = parseApiResponse(body)
-            val time = formatTime(apiResponse.datetime)
+
             client.close()
-            return time
+
+            return apiResponse.data?.first()?.title?:"something went wrong"
         } catch (e: Exception) {
-            // Log exception or return a default error message
-            // e.printStackTrace()
             println(e)
-            return e.localizedMessage?:"No Error Available"
+            return e.localizedMessage ?: "No Error Msg Available"
         }
     }
 
-    private fun parseApiResponse(json: String): ApiResponse {
+    private fun parseApiResponse(jsonString: String): ApiResponse {
         val gson = Gson()
-        return gson.fromJson(json, ApiResponse::class.java)
-    }
-
-    private fun formatTime(dateTimeString: String): String {
-        val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX", Locale.getDefault())
-        val outputFormat = SimpleDateFormat("HH:mm:ss", Locale.getDefault())
-        val date = inputFormat.parse(dateTimeString)
-        return outputFormat.format(date!!)
+        return gson.fromJson(jsonString, ApiResponse::class.java)
     }
 
     companion object {
-        private const val UPDATE_ACTION = "com.example.home_widget_demo.UPDATE_TIME"
+        private const val UPDATE_ACTION = "com.homewidget.demo.UPDATE_TIME"
     }
 }
 
+data class RequestBody(
+    val param: Param,
+)
+
+data class Param(
+    val companyId: Int,
+    val langId: Int,
+    val marketId: Int,
+//    val pageNo: Int,
+    val pageSize: Int,
+)
+
 data class ApiResponse(
-    val abbreviation: String,
-    @SerializedName("client_ip") val clientIp: String,
-    val datetime: String,
-    @SerializedName("day_of_week") val dayOfWeek: Int,
-    @SerializedName("day_of_year") val dayOfYear: Int,
-    val dst: Boolean,
-    @SerializedName("dst_from") val dstFrom: String?,
-    @SerializedName("dst_offset") val dstOffset: Int,
-    @SerializedName("dst_until") val dstUntil: String?,
-    @SerializedName("raw_offset") val rawOffset: Int,
-    val timezone: String,
-    val unixtime: Long,
-    @SerializedName("utc_datetime") val utcDatetime: String,
-    @SerializedName("utc_offset") val utcOffset: String,
-    @SerializedName("week_number") val weekNumber: Int
+    @SerializedName("Data") val data: List<Article>?,
+)
+
+data class Article(
+    @SerializedName("ArticleID") val articleID: Int?,
+    @SerializedName("Title") val title: String?,
+    @SerializedName("ShortUrl") val shortUrl: String?,
+    @SerializedName("ArticleImageUrl") val articleImageUrl: String?,
 )
