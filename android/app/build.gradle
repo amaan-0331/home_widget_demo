@@ -74,7 +74,8 @@ dependencies {
     implementation("io.ktor:ktor-client-serialization:2.1.0")
     implementation("com.google.code.gson:gson:2.11.0")
 
-    implementation("androidx.glance:glance-appwidget:1.0.0")
+    implementation("androidx.glance:glance-appwidget:1.1.0")
+    implementation("androidx.glance:glance-material3:1.1.0")
 
     implementation("androidx.work:work-runtime:2.9.0")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
