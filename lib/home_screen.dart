@@ -1,28 +1,13 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:home_widget/home_widget.dart';
 import 'package:home_widget_demo/dummy_data.dart';
 import 'package:home_widget_demo/news_data.dart';
+import 'package:home_widget_demo/widget_related.dart';
+import 'package:workmanager/workmanager.dart';
 
 const String appGroupId = 'group.homewidget';
 const String iOSWidgetName = 'NewsWidgets';
 const String androidWidgetName = 'NewsWidget';
-
-void updateHeadline(NewsArticle newHeadline) {
-  HomeWidget.saveWidgetData<String>(
-    'headline_title',
-    newHeadline.title,
-  );
-  HomeWidget.saveWidgetData<String>(
-    'headline_description',
-    newHeadline.description,
-  );
-  HomeWidget.updateWidget(
-    iOSName: iOSWidgetName,
-    androidName: androidWidgetName,
-  );
-}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -38,9 +23,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
     HomeWidget.setAppGroupId(appGroupId);
 
-    // Mock read in some data and update the headline
-    final newHeadline = getArticles()[Random().nextInt(getArticles().length)];
-    updateHeadline(newHeadline);
+    Workmanager().registerPeriodicTask(
+      startBackgroundUpdating,
+      startBackgroundUpdating,
+      constraints: Constraints(networkType: NetworkType.connected),
+    );
   }
 
   @override
@@ -54,6 +41,18 @@ class _HomeScreenState extends State<HomeScreen> {
           fontWeight: FontWeight.bold,
           color: Colors.black,
         ),
+        actions: [
+          IconButton(
+            onPressed: () => HomeWidget.isRequestPinWidgetSupported().then(
+              (value) => (value ?? false)
+                  ? HomeWidget.requestPinWidget(
+                      name: 'LatestNewsWidgetReceiver',
+                    )
+                  : null,
+            ),
+            icon: const Icon(Icons.widgets_rounded),
+          )
+        ],
       ),
       body: ListView.separated(
         itemCount: getArticles().length,
@@ -83,16 +82,6 @@ class ArticleScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
-            content: Text('Updating home screen widget...'),
-          ));
-          // New: call updateHeadline
-          updateHeadline(article);
-        },
-        label: const Text('Update Homescreen'),
-      ),
       appBar: AppBar(title: Text(article.title)),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
