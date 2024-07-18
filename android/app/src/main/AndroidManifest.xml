@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
     <uses-permission android:name="android.permission.INTERNET" />
     <!--
      Required to query activities that can process text, see:
@@ -20,11 +21,23 @@
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:label="home_widget_demo">
-        
+        <receiver
+            android:name=".LatestNews"
+            android:exported="false"
+            android:label="Latest News from API">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/latest_news_info" />
+        </receiver>
+
         <receiver
             android:name=".NewsWidget"
-            android:label="Dummy News from Flutter"
-            android:exported="false">
+            android:exported="false"
+            android:label="Dummy News from Flutter">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
             </intent-filter>
@@ -33,15 +46,15 @@
                 android:name="android.appwidget.provider"
                 android:resource="@xml/news_widget_info" />
         </receiver>
-
-        <receiver 
+        <receiver
             android:name=".TimeWidgetProvider"
-            android:label="Time from API"
-            android:exported="false">
+            android:exported="false"
+            android:label="Time from API">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
                 <action android:name="com.homewidget.demo.UPDATE_TIME" />
             </intent-filter>
+
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/time_widget_info" />
