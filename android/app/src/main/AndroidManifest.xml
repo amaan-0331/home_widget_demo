@@ -23,6 +23,7 @@
         
         <receiver
             android:name=".NewsWidget"
+            android:label="Dummy News from Flutter"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
@@ -35,6 +36,7 @@
 
         <receiver 
             android:name=".TimeWidgetProvider"
+            android:label="Time from API"
             android:exported="false">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
