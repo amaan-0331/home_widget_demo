@@ -9,11 +9,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.RemoteViews
 import androidx.core.content.ContextCompat.startActivity
-import androidx.work.Constraints
-import androidx.work.ExistingWorkPolicy
-import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequest
-import androidx.work.WorkManager
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
@@ -43,7 +38,6 @@ class LatestNews : AppWidgetProvider() {
 
         if (intent.action == "com.homewidget.demo.ITEM_CLICK") {
             val newsLink = intent.getStringExtra("news_link")
-            println("newsLink is $newsLink")
 
             if (newsLink != null) {
                 val urlIntent = Intent(Intent.ACTION_VIEW, Uri.parse(newsLink))
@@ -74,9 +68,7 @@ class LatestNews : AppWidgetProvider() {
     ) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                println("Going to fetch the API")
                 val latestNews = fetchApiData();
-                println("Done fetching the API")
                 val top5News = latestNews.take(4)
 
                 val views = RemoteViews(context.packageName, R.layout.latest_news)
@@ -123,9 +115,7 @@ class LatestNews : AppWidgetProvider() {
             val client = HttpClient(CIO)
             val response: HttpResponse = client.get("https://ok.surf/api/v1/news-feed")
             val body = response.bodyAsText()
-            println(body)
             val newsItems = parseApiResponse(body)
-            println(newsItems)
             client.close()
 
             if (newsItems == null) throw Exception("Didn't receive any news")
